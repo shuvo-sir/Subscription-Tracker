@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { JWT_SECRET, JWT_EXPIRE } from "../config/env.js";
 
 export const signUp = async (req, res, next) => {
     const session = await mongoose.startSession();
@@ -9,7 +10,7 @@ export const signUp = async (req, res, next) => {
 
     try {
         // create new user
-        const { username, email, password } = req.body;
+        const { name, email, password } = req.body;
 
         // cheeck if user already exists
         const existingUser = await User.findOne({ email });
@@ -24,14 +25,14 @@ export const signUp = async (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // create new user
-        const newUsers = new User([{
-            username,
+        const newUsers = await User.create([{
+            name,
             email,
             password: hashedPassword
         }], { session });
 
         // jwt token generation
-        const token = jwt.sign({ id: newUsers[0]._id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE });
+        const token = jwt.sign({ id: newUsers[0]._id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
 
         await session.commitTransaction();
         session.endSession();
@@ -51,6 +52,40 @@ export const signUp = async (req, res, next) => {
     }
 }
 
-export const signIn = async (req, res, next) => {}
+export const signIn = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        // check if user exists
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            const error = new Error("User not found");
+            error.statusCode = 404;
+            throw error;
+        }
+        // check if password is correct
+        const isPasswordCorrect = await bcrypt.compare(password, existingUser.password);
+        if (!isPasswordCorrect) {
+            const error = new Error("Invalid credentials");
+            error.statusCode = 401;
+            throw error;
+        }
+
+        // jwt token generation
+        const token = jwt.sign({ id: existingUser._id }, JWT_SECRET, { expiresIn: JWT_EXPIRE });
+
+        res.status(200).json({
+            success: true,
+            message: "User signed in successfully",
+            data: {
+                token,
+                user: existingUser
+            }
+        });
+        
+    } catch (error) {
+        next(error);
+    }
+}
 
 export const signOut = async (req, res, next) => {}
