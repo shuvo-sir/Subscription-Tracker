@@ -88,4 +88,17 @@ export const signIn = async (req, res, next) => {
     }
 }
 
-export const signOut = async (req, res, next) => {}
+export const signOut = async (req, res, next) => {
+    try {
+        // Invalidate the token on the client side by removing it from local storage or cookies
+        res.clearCookie("token");
+        
+        res.status(200).json({
+            success: true,
+            message: "User signed out successfully"
+        });
+
+    } catch (error) {
+        next(error);
+    }
+}
