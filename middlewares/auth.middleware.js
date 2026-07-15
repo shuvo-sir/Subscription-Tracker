@@ -17,6 +17,7 @@ const authorize = async (req, res, next) => {
             throw error;
         }
 
+        // Verify the token
         const decoded = jwt.verify(token, JWT_SECRET);
 
         const user = await User.findById(decoded.id);
