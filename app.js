@@ -6,6 +6,8 @@ import subscriptionRouter from './routes/subscription.routes.js';
 import connectToDatabase from './database/mongodb.js';
 import errorMiddleware from './middlewares/error.middleware.js';
 import cookieParser from 'cookie-parser';
+import arcjetMiddleware from './middlewares/arcjet.middleware.js';
+
 
 const app = express();
 
@@ -17,6 +19,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/subscriptions', subscriptionRouter);
 app.use(errorMiddleware);
+app.use(arcjetMiddleware); // Apply Arcjet middleware globally
 
 app.get('/', (req, res) => {
     res.send("Welcome to the Express server!");    
