@@ -66,27 +66,22 @@ const subscriptionSchema = new mongoose.Schema({
 
 
 // auto calculate renewalDate based on startDate and frequency
-subscriptionSchema.pre('save', function(next) {
+subscriptionSchema.pre("save", async function () {
     if (this.startDate && this.frequency) {
-        const startDate = new Date(this.startDate);
-        let renewalDate;
+        const renewalDate = new Date(this.startDate);
 
         switch (this.frequency) {
             case "daily":
-                renewalDate = new Date(startDate);
-                renewalDate.setDate(startDate.getDate() + 1);
+                renewalDate.setDate(renewalDate.getDate() + 1);
                 break;
             case "weekly":
-                renewalDate = new Date(startDate);
-                renewalDate.setDate(startDate.getDate() + 7);
+                renewalDate.setDate(renewalDate.getDate() + 7);
                 break;
             case "monthly":
-                renewalDate = new Date(startDate);
-                renewalDate.setMonth(startDate.getMonth() + 1);
+                renewalDate.setMonth(renewalDate.getMonth() + 1);
                 break;
             case "yearly":
-                renewalDate = new Date(startDate);
-                renewalDate.setFullYear(startDate.getFullYear() + 1);
+                renewalDate.setFullYear(renewalDate.getFullYear() + 1);
                 break;
             default:
                 throw new Error("Invalid frequency");
@@ -94,8 +89,7 @@ subscriptionSchema.pre('save', function(next) {
 
         this.renewalDate = renewalDate;
     }
-    next();
-    // auto update the status if renewalDate has passed
+
     if (this.renewalDate && this.renewalDate < new Date()) {
         this.status = "inactive";
     }
