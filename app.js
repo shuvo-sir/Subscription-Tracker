@@ -20,6 +20,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/subscriptions', subscriptionRouter);
 app.use('/api/workflow', workflowRouter);
+
+
 app.use(errorMiddleware);
 app.use(arcjetMiddleware); // Apply Arcjet middleware globally
 
